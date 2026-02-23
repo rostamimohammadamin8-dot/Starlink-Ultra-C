@@ -1,0 +1,46 @@
+name: Starlink-C-Engine-Autobot
+
+on:
+  schedule:
+    - cron: '0 */4 * * *' # Auto-run every 4 hours for low latency
+  workflow_dispatch: # Manual start button
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup C++ Environment
+        run: sudo apt-get update && sudo apt-get install -y g++ build-essential
+
+      - name: Run Starlink Scanner
+        run: |
+          g++ -O3 scanner.cpp -o ip_scanner
+          ./ip_scanner
+
+      - name: Update Engine with Best IP
+        run: |
+          if [ -f clean_ips.txt ]; then
+            BEST_IP=$(head -n 1 clean_ips.txt)
+            echo "Selected US IP: $BEST_IP"
+            sed -i "s/target_ip = \".*\"/target_ip = \"$BEST_IP\"/" main.cpp
+          else
+            echo "No clean IP found, using default."
+          fi
+
+      - name: Build and Generate Final Config
+        run: |
+          g++ -O3 main.cpp -o starlink_engine
+          ./starlink_engine
+
+      - name: Deploy to Subscription Link
+        run: |
+          git config --global user.name "Amin-Starlink-Bot"
+          git config --global user.email "amin@starlink.bot"
+          git add sub.txt main.cpp
+          git commit -m "Starlink Update: Low Latency Fixed-IP Applied" || echo "No changes"
+          git push
