@@ -21,7 +21,7 @@ int main() {
     // Starlink Ultra-Advanced Logic
     string uuid = "77777777-7777-7777-7777-777777777777"; // You can replace with your own UUID
     string sni = "amin-starlink.workers.dev";
-    string target_ip = "104.18.2.10"; // Will be updated by scanner
+    string target_ip = "104.16.80.1"; // Will be updated by scanner
 
     stringstream config;
     config << "vless://" << uuid << "@" << target_ip << ":443"
